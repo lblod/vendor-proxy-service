@@ -1,6 +1,8 @@
 import { app, query } from 'mu';
 import bodyParser from 'body-parser';
+import cors from 'cors'
 
+app.use(cors())
 app.use(bodyParser.json({ limit: '50mb' }))
 
 app.get('/', (req, res) => {
