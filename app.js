@@ -29,9 +29,9 @@ app.post('/query', async (req,res) => {
     const sessionCookie = loginResponse.headers.getSetCookie()[0];
     
 
-    var formBody = [];
-    var encodedKey = encodeURIComponent('query');
-    var encodedValue = encodeURIComponent(query);
+    const formBody = [];
+    const encodedKey = encodeURIComponent('query');
+    const encodedValue = encodeURIComponent(query);
     formBody.push(encodedKey + "=" + encodedValue);
 
     const queryResponse = await fetch('https://mandatenbeheer.lblod.info/vendor/sparql', {
