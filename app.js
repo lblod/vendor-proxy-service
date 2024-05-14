@@ -1,5 +1,6 @@
 import { app } from 'mu';
 import bodyParser from 'body-parser';
+import {Readable} from 'stream'
 
 app.use(bodyParser.json({ limit: '50mb' }))
 
@@ -8,11 +9,18 @@ app.get('/', (req, res) => {
 });
 
 app.post('/query', async (req,res) => {
-    const authGroups = JSON.parse(req.headers['mu-auth-allowed-groups'])
+    const authGroups = JSON.parse(req.headers['mu-auth-allowed-groups']);
     const orgGroup = authGroups.find((group) => group.name === 'org');
-    const adminUnitUUid = orgGroup.variables[0]
+    if(!orgGroup) {
+        res.status(401);
+        res.json({error: 'You should me logged to access this service'});
+    }
+    const adminUnitUUid = orgGroup.variables[0];
     const query = req.body.query;
-    if(!query) res.json({error: 'Please specify a query to perform'})
+    if(!query) {
+        res.status(400);
+        return res.json({error: 'Please specify a query to perform'});
+    }
     const loginResponse = await fetch('https://mandatenbeheer.lblod.info/vendor/login', {
         method: 'POST',
         headers: {
@@ -26,6 +34,11 @@ app.post('/query', async (req,res) => {
             }
         })
     })
+
+    if(loginResponse.status !== 201) {
+        res.status(loginResponse.status);
+        return Readable.fromWeb(loginResponse.body).pipe(res);
+    }
     const sessionCookie = loginResponse.headers.getSetCookie()[0];
     
 
@@ -42,7 +55,5 @@ app.post('/query', async (req,res) => {
         },
         body: formBody
     })
-    const queryJson = await queryResponse.json()
-
-    res.json(queryJson)
+    Readable.fromWeb(queryResponse.body).pipe(res);
 })
