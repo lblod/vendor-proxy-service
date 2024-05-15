@@ -16,12 +16,14 @@ app.post('/query', async (req,res) => {
         res.json({error: 'You should me logged to access this service'});
     }
     const adminUnitUUid = orgGroup.variables[0];
+    
     const query = req.body.query;
     if(!query) {
         res.status(400);
         return res.json({error: 'Please specify a query to perform'});
     }
-    const loginResponse = await fetch('https://mandatenbeheer.lblod.info/vendor/login', {
+    const queryBaseUrl = process.env.QUERY_BASE_URL
+    const loginResponse = await fetch(`${queryBaseUrl}/vendor/login`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
@@ -29,7 +31,7 @@ app.post('/query', async (req,res) => {
         body: JSON.stringify({
             organization: `http://data.lblod.info/id/bestuurseenheden/${adminUnitUUid}`,
             publisher: {
-                'uri': 'http://data.lblod.info/vendors/75ad4503-1699-4e43-8cab-a494142ae571',
+                'uri': process.env.VENDOR_URI,
                 'key': process.env.VENDOR_KEY
             }
         })
@@ -47,7 +49,7 @@ app.post('/query', async (req,res) => {
     const encodedValue = encodeURIComponent(query);
     formBody.push(encodedKey + "=" + encodedValue);
 
-    const queryResponse = await fetch('https://mandatenbeheer.lblod.info/vendor/sparql', {
+    const queryResponse = await fetch(`${queryBaseUrl}/vendor/sparql`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/x-www-form-urlencoded',
