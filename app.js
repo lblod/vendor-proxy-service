@@ -5,18 +5,36 @@ import {Readable} from 'stream'
 app.use(bodyParser.json({ limit: '50mb' }))
 
 app.get('/', (req, res) => {
-    res.end('Hello from LMB Sparql Proxy')
+    res.end('Hello from Vendor Sparql Proxy')
 });
 
 app.post('/query', async (req,res) => {
+    const missingVariables = [];
+    if(!process.env.AUTH_GROUP) {
+        missingVariables.push('AUTH GROUP')
+    }
+    if(!process.env.QUERY_BASE_URL) {
+        missingVariables.push('QUERY_BASE_URL')
+    }
+    if(!process.env.VENDOR_URI) {
+        missingVariables.push('VENDOR_URI')
+    }
+    if(!process.env.VENDOR_KEY) {
+        missingVariables.push('VENDOR_KEY')
+    }
+    if(missingVariables.length > 0) {
+        res.status(500);
+        return res.json({error: `Missing ${missingVariables.join(' ')} environment variable`})
+    }
+    const authGroupToCheck = process.env.AUTH_GROUP
     const authGroups = JSON.parse(req.headers['mu-auth-allowed-groups']);
-    const orgGroup = authGroups.find((group) => group.name === 'org');
+    const orgGroup = authGroups.find((group) => group.name === authGroupToCheck);
     if(!orgGroup) {
         res.status(401);
-        res.json({error: 'You should me logged to access this service'});
+        return res.json({error: 'You should me logged to access this service'});
     }
     const adminUnitUUid = orgGroup.variables[0];
-    
+
     const query = req.body.query;
     if(!query) {
         res.status(400);
