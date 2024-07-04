@@ -9,7 +9,10 @@ In order to configure it, you will need to provide the following environment var
 - `QUERY_BASE_URL`: The base url of your vendor endpoint, so if you query endpoint is `https://mandatenbeheer.lblod.info/vendor/query` your query base url will be `https://mandatenbeheer.lblod.info`.
 - `VENDOR_KEY`: The key provided by the vendor for authentication.
 - `VENDOR_URI`: The uri provided by the vendor for authentication.
-- `AUTH_GROUP`: The auth group to check for the administrative unit the user belongs to.
+
+You will also need to provide one of the following two environment variables. These are used to identify the administrative unit to authenticate with.
+- `ADMINISTRATIVE_UNIT_ID`: the id of the administrative unit to authenticate with.
+- `AUTH_GROUP`: The auth group to check for the administrative unit the user belongs to. Not used if `ADMINISTRATIVE_UNIT_ID` is defined.
 
 You will also need to add the service to your dispatcher as the service needs to get your authGroups in order to determine which administrative unit do you belong, something like this
 ```
