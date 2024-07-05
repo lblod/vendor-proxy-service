@@ -10,9 +10,6 @@ app.get('/', (req, res) => {
 
 app.post('/query', async (req,res) => {
     const missingVariables = [];
-    if(!process.env.AUTH_GROUP) {
-        missingVariables.push('AUTH GROUP')
-    }
     if(!process.env.QUERY_BASE_URL) {
         missingVariables.push('QUERY_BASE_URL')
     }
@@ -22,18 +19,28 @@ app.post('/query', async (req,res) => {
     if(!process.env.VENDOR_KEY) {
         missingVariables.push('VENDOR_KEY')
     }
+    if(!process.env.AUTH_GROUP && !process.env.ADMINISTRATIVE_UNIT_ID) {
+        missingVariables.push('AUTH_GROUP or ADMINISTRATIVE_UNIT_ID')
+    }
     if(missingVariables.length > 0) {
         res.status(500);
         return res.json({error: `Missing ${missingVariables.join(' ')} environment variable`})
     }
-    const authGroupToCheck = process.env.AUTH_GROUP
-    const authGroups = JSON.parse(req.headers['mu-auth-allowed-groups']);
-    const orgGroup = authGroups.find((group) => group.name === authGroupToCheck);
-    if(!orgGroup) {
-        res.status(401);
-        return res.json({error: 'You should me logged to access this service'});
+    let adminUnitUUid;
+    if(process.env.ADMINISTRATIVE_UNIT_ID){
+        adminUnitUUid = process.env.ADMINISTRATIVE_UNIT_ID
     }
-    const adminUnitUUid = orgGroup.variables[0];
+    else {
+        const authGroupToCheck = process.env.AUTH_GROUP
+        const authGroups = JSON.parse(req.headers['mu-auth-allowed-groups']);
+        const orgGroup = authGroups.find((group) => group.name === authGroupToCheck);
+        if(!orgGroup) {
+            res.status(401);
+            return res.json({error: 'You should me logged to access this service'});
+        }
+        adminUnitUUid = orgGroup.variables[0];
+    }
+    
 
     const query = req.body.query;
     if(!query) {
