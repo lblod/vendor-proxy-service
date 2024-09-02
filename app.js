@@ -2,7 +2,8 @@ import { app } from 'mu';
 import bodyParser from 'body-parser';
 import { Readable } from 'stream';
 
-app.use(bodyParser.json({ limit: '50mb' }));
+app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.text({ type: 'application/sparql-query' }));
 
 app.get('/', (req, res) => {
   res.end('Hello from Vendor Sparql Proxy');
@@ -33,7 +34,7 @@ app.post('/query', async (req, res) => {
     adminUnitUUid = process.env.ADMINISTRATIVE_UNIT_ID;
   } else {
     const authGroupToCheck = process.env.AUTH_GROUP;
-    const authGroups = JSON.parse(req.headers['mu-auth-allowed-groups']);
+    const authGroups = JSON.parse(req.get('mu-auth-allowed-groups'));
     const orgGroup = authGroups.find(
       (group) => group.name === authGroupToCheck
     );
@@ -44,7 +45,15 @@ app.post('/query', async (req, res) => {
     adminUnitUUid = orgGroup.variables[0];
   }
 
-  const query = req.body.query;
+  let query;
+  if (req.is('urlencoded')) {
+    query = req.body.query;
+  } else if (req.is('application/sparql-query')) {
+    query = req.body;
+  } else {
+    res.status(415).send('Unsupported Media Type');
+    return;
+  }
   if (!query) {
     res.status(400);
     return res.json({ error: 'Please specify a query to perform' });
@@ -66,6 +75,7 @@ app.post('/query', async (req, res) => {
 
   if (loginResponse.status !== 201) {
     res.status(loginResponse.status);
+    res.setHeader('content-type', loginResponse.headers.get('content-type'));
     return Readable.fromWeb(loginResponse.body).pipe(res);
   }
   const sessionCookie = loginResponse.headers.getSetCookie()[0];
@@ -78,10 +88,12 @@ app.post('/query', async (req, res) => {
   const queryResponse = await fetch(`${queryBaseUrl}/vendor/sparql`, {
     method: 'POST',
     headers: {
+      Accept: req.get('accept'),
       'Content-Type': 'application/x-www-form-urlencoded',
       cookie: sessionCookie,
     },
     body: formBody,
   });
+  res.setHeader('content-type', queryResponse.headers.get('content-type'));
   Readable.fromWeb(queryResponse.body).pipe(res);
 });

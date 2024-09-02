@@ -31,15 +31,18 @@ You will also need to add the service to your dispatcher as the service needs to
 The options part is only needed if you will do some cors requests
 
 ## Usage
-Once that is done you will be able to access your service with a GET request at `/` that will respond with a hello world message
-To query your endpoint you can send a POST request to `/query` with a json body that has a query parameter with the query you want to perform, like:
-```
-{
-    "query": "SELECT * WHERE { ?a ?b ?c } LIMIT 100"
-}
+Once that is done you will be able to access your service with a GET request at `/` that will respond with a hello world message.
+
+To query your endpoint you can send a POST request to `/query`.
+You can pass the SPARQL along in two ways:
+- With an `application/x-www-form-urlencoded` body: encode the sparql query into the `query` field, like so: `query=SELECT%20%2A%20WHERE%20%7B%0A%20%20%3Fs%20%3Fp%20%3Fo.%0A%7D%20%0ALIMIT%2010`
+- With an `application/sparql-query` body: you can simply put the sparql query unencoded in the body, like so:
+```sparql
+SELECT * WHERE { ?a ?b ?c } LIMIT 100
 ```
 
-The service will then redirect the response of the vendor endpoint to your client
+The service will then redirect the response of the vendor endpoint to your client.
+If you do not pass an `accept` header, the endpoint will respond in the `application/sparql-results+json` format.
 
 
 ## Errors
