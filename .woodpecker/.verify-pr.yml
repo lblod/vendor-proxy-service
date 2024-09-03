@@ -3,6 +3,10 @@ steps:
     image: node:20-slim
     commands:
       - npm ci
+  lint:
+    image: node:20-slim
+    commands:
+      - npm run lint
   build-dry-run:
     image: plugins/docker
     settings:
