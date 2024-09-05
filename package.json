@@ -6,7 +6,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "changeset": "changeset",
-    "release": "release-it"
+    "release": "release-it",
+    "lint": "eslint ."
   },
   "author": "",
   "license": "ISC",
@@ -16,7 +17,10 @@
   "devDependencies": {
     "@changesets/changelog-github": "^0.5.0",
     "@changesets/cli": "^2.27.7",
+    "@eslint/js": "^9.9.1",
     "changesets-release-it-plugin": "^0.1.2",
-    "release-it": "^17.6.0"
+    "eslint": "^9.9.1",
+    "globals": "^15.9.0",
+    "release-it": "^16.0.0"
   }
 }
