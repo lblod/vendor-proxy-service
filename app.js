@@ -9,6 +9,10 @@ app.get('/', (req, res) => {
   res.end('Hello from Vendor Sparql Proxy');
 });
 
+if (!process.env.AUTH_GROUP) {
+  console.warn('WARNING! No AUTH_GROUP is configured, so running without authentication checks');
+}
+
 app.post('/query', async (req, res) => {
   const missingVariables = [];
   if (!process.env.QUERY_BASE_URL) {
@@ -29,10 +33,8 @@ app.post('/query', async (req, res) => {
       error: `Missing ${missingVariables.join(' ')} environment variable`,
     });
   }
-  let adminUnitUUid;
-  if (process.env.ADMINISTRATIVE_UNIT_ID) {
-    adminUnitUUid = process.env.ADMINISTRATIVE_UNIT_ID;
-  } else {
+  let adminUnitUUid = process.env.ADMINISTRATIVE_UNIT_ID;
+  if (process.env.AUTH_GROUP) {
     const authGroupToCheck = process.env.AUTH_GROUP;
     const authGroups = JSON.parse(req.get('mu-auth-allowed-groups'));
     const orgGroup = authGroups.find(
@@ -40,9 +42,15 @@ app.post('/query', async (req, res) => {
     );
     if (!orgGroup) {
       res.status(401);
-      return res.json({ error: 'You should me logged to access this service' });
+      return res.json({ error: 'You should be logged to access this service' });
     }
-    adminUnitUUid = orgGroup.variables[0];
+    if (!adminUnitUUid) {
+      adminUnitUUid = orgGroup?.variables[0];
+    }
+  }
+  if (!adminUnitUUid) {
+    res.status(401);
+    return res.json({ error: 'You should be logged to access this service' });
   }
 
   let query;

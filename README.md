@@ -11,8 +11,8 @@ In order to configure it, you will need to provide the following environment var
 - `VENDOR_URI`: The uri provided by the vendor for authentication.
 
 You will also need to provide one of the following two environment variables. These are used to identify the administrative unit to authenticate with.
-- `ADMINISTRATIVE_UNIT_ID`: the id of the administrative unit to authenticate with.
-- `AUTH_GROUP`: The auth group to check for the administrative unit the user belongs to. Not used if `ADMINISTRATIVE_UNIT_ID` is defined.
+- `AUTH_GROUP`: The auth group to check for the administrative unit the user belongs to. Required if `ADMINISTRATIVE_UNIT_ID` is not defined or if the auth group is not associated with an administrative unit. This should always be set in production to avoid unauthenticated access.
+- `ADMINISTRATIVE_UNIT_ID`: the id of the administrative unit to authenticate with. This overrides the administrative unit taken from the auth group.
 
 You will also need to add the service to your dispatcher as the service needs to get your authGroups in order to determine which administrative unit do you belong, something like this
 ```
