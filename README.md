@@ -31,7 +31,10 @@ You will also need to add the service to your dispatcher as the service needs to
 The options part is only needed if you will do some cors requests
 
 ## Usage
+
 Once that is done you will be able to access your service with a GET request at `/` that will respond with a hello world message.
+
+### Proxying to a SPARQL endpoint
 
 To query your endpoint you can send a POST request to `/query`.
 You can pass the SPARQL along in two ways:
@@ -44,6 +47,11 @@ SELECT * WHERE { ?a ?b ?c } LIMIT 100
 The service will then redirect the response of the vendor endpoint to your client.
 If you do not pass an `accept` header, the endpoint will respond in the `application/sparql-results+json` format.
 
+### Proxying to a read-only JSON API endpoint
+
+If the endpoints you're proxying to are JSON-api endpoints, use the `query-json/*` POST and GET routes instead. 
+The proxy will forward any paths after `query-json` verbatim to the proxy target, and of course pass along any request body.
+We currently have not implemented `PATCH` or `DELETE`, since our current usecases for the proxy are for proxying to read-only endpoints. 
 
 ## Errors
 
