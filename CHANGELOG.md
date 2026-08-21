@@ -1,5 +1,13 @@
 # lmb-sparql-proxy
 
+## 0.3.0
+
+### Minor Changes
+
+- [#4](https://github.com/lblod/vendor-proxy-service/pull/4) [`c63de84`](https://github.com/lblod/vendor-proxy-service/commit/c63de84cf20e2aaf979e6daf16fc11984bb4d229) Thanks [@piemonkey](https://github.com/piemonkey)! - Allow setting both AUTH_GROUP and ADMINISTRATIVE_UNIT_ID, with the specified administrative unit taking precendence
+
+- [#5](https://github.com/lblod/vendor-proxy-service/pull/5) [`50489cf`](https://github.com/lblod/vendor-proxy-service/commit/50489cfad898d0f0a3735a749a5136ba6cd25482) Thanks [@lagartoverde](https://github.com/lagartoverde)! - Add new json-api routes
+
 ## 0.2.0
 
 ### Minor Changes
