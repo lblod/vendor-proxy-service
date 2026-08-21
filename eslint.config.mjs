@@ -9,6 +9,7 @@ export default [
         rules: {
             ...js.configs.recommended.rules,
             quotes: ["error", "single"],
+            semi: "error",
         } 
     },
 ];
