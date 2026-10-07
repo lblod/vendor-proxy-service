@@ -71,7 +71,7 @@ app.post('/query', async (req, res) => {
 });
 
 app.get('/query-json/*', async (req, res) => {
-  const path = req.path.replace('/query-json', '');
+  const path = req.originalUrl.replace('/query-json', '');
   const missingVariables = getMissingVariables();
   if (missingVariables.length > 0) {
     res.status(500);
