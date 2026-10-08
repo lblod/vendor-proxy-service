@@ -1,5 +1,11 @@
 # lmb-sparql-proxy
 
+## 0.3.1
+
+### Patch Changes
+
+- [#7](https://github.com/lblod/vendor-proxy-service/pull/7) [`d008b42`](https://github.com/lblod/vendor-proxy-service/commit/d008b426557665b4f0b435e26b799afd6df60ec1) Thanks [@lagartoverde](https://github.com/lagartoverde)! - Fix: Correctly propagate query params
+
 ## 0.3.0
 
 ### Minor Changes
