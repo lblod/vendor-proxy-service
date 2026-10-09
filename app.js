@@ -1,18 +1,44 @@
 import { app } from 'mu';
 import bodyParser from 'body-parser';
+import cors from 'cors';
 import { Readable } from 'stream';
+import { parseCorsSettings } from './utils';
 
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.text({ type: 'application/sparql-query' }));
 app.use(bodyParser.json({ type: 'application/json' }));
 
+let corsAllowHosts = false;
+if (process.env.CORS_ALLOW) {
+  const raw = process.env.CORS_ALLOW;
+  const processed = parseCorsSettings(raw);
+  switch (processed.type) {
+    case 'non-json':
+      console.info('cors setting is not a json value, using raw value');
+      corsAllowHosts = raw;
+      break;
+    case 'boolean':
+    case 'array':
+      corsAllowHosts = processed.parsedValue;
+      break;
+    case 'unknown':
+      throw new Error(
+        'CORS_ALLOW has unsupported JSON value. It should be a boolean, an array, or a string',
+      );
+  }
+}
 
-app.get('/', (req, res) => {
+if (corsAllowHosts) {
+  app.use(cors({ origin: corsAllowHosts }));
+}
+app.get('/', (_req, res) => {
   res.end('Hello from Vendor Sparql Proxy');
 });
 
 if (!process.env.AUTH_GROUP) {
-  console.warn('WARNING! No AUTH_GROUP is configured, so running without authentication checks');
+  console.warn(
+    'WARNING! No AUTH_GROUP is configured, so running without authentication checks',
+  );
 }
 
 app.post('/query', async (req, res) => {
@@ -56,7 +82,7 @@ app.post('/query', async (req, res) => {
   const encodedValue = encodeURIComponent(query);
   formBody.push(encodedKey + '=' + encodedValue);
 
-  const queryBaseUrl = process.env.QUERY_BASE_URL;  
+  const queryBaseUrl = process.env.QUERY_BASE_URL;
   const queryResponse = await fetch(`${queryBaseUrl}/vendor/sparql`, {
     method: 'POST',
     headers: {
@@ -99,12 +125,11 @@ app.get('/query-json/*', async (req, res) => {
       cookie: sessionCookie,
     },
   };
-  const queryBaseUrl = process.env.QUERY_BASE_URL;  
+  const queryBaseUrl = process.env.QUERY_BASE_URL;
   const queryResponse = await fetch(`${queryBaseUrl}${path}`, requestOptions);
   res.setHeader('content-type', queryResponse.headers.get('content-type'));
   Readable.fromWeb(queryResponse.body).pipe(res);
 });
-
 
 app.post('/query-json/*', async (req, res) => {
   const path = req.path.replace('/query-json', '');
@@ -128,7 +153,7 @@ app.post('/query-json/*', async (req, res) => {
     res.status(415).send('Unsupported Media Type');
     return;
   }
-  if (!path ) {
+  if (!path) {
     res.status(400);
     return res.json({ error: 'Please specify a path to send to perform' });
   }
@@ -146,19 +171,18 @@ app.post('/query-json/*', async (req, res) => {
     headers: {
       Accept: req.get('accept'),
       cookie: sessionCookie,
-      'Content-Type': 'application/json'
+      'Content-Type': 'application/json',
     },
-    body: JSON.stringify(body)
+    body: JSON.stringify(body),
   };
-  const queryBaseUrl = process.env.QUERY_BASE_URL;  
+  const queryBaseUrl = process.env.QUERY_BASE_URL;
   const queryResponse = await fetch(`${queryBaseUrl}${path}`, requestOptions);
   res.setHeader('content-type', queryResponse.headers.get('content-type'));
   Readable.fromWeb(queryResponse.body).pipe(res);
 });
 
-
 async function login(adminUnitUUid) {
-  const queryBaseUrl = process.env.QUERY_BASE_URL;   
+  const queryBaseUrl = process.env.QUERY_BASE_URL;
   return await fetch(`${queryBaseUrl}/vendor/login`, {
     method: 'POST',
     headers: {
@@ -174,14 +198,14 @@ async function login(adminUnitUUid) {
   });
 }
 
-function getAdminUnitUuid(req){
+function getAdminUnitUuid(req) {
   let adminUnitUUid = process.env.ADMINISTRATIVE_UNIT_ID;
   if (process.env.AUTH_GROUP) {
     const authGroupToCheck = process.env.AUTH_GROUP;
     const authGroups = JSON.parse(req.get('mu-auth-allowed-groups'));
-    
+
     const orgGroup = authGroups.find(
-      (group) => group.name === authGroupToCheck
+      (group) => group.name === authGroupToCheck,
     );
     if (!orgGroup) {
       return;
@@ -193,7 +217,7 @@ function getAdminUnitUuid(req){
   return adminUnitUUid;
 }
 
-function getMissingVariables(){
+function getMissingVariables() {
   const missingVariables = [];
   if (!process.env.QUERY_BASE_URL) {
     missingVariables.push('QUERY_BASE_URL');
